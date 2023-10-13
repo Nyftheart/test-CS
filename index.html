@@ -77,14 +77,13 @@
     </style>
 </head>
 <body>
-<h1>Titre :</h1>
-<textarea id="titleTextarea"></textarea>
+<h1 id="titleTextarea">Titre :</h1>
 
-<h1>Contenu :</h1>
-<textarea id="contentTextarea"></textarea>
+<p id="contentTextarea">Contenu :</p>
 
 <button class="button" onclick="duplicateContent()">+</button>
 <button class="button" onclick="showEditor()">modifier</button>
+<button class="button" onclick="saveHTMLToLocalStorage()">Sauvegarder le HTML</button>
 
 <div id="editorModal">
     <div class="modal-content">
@@ -97,21 +96,18 @@
 </div>
 
 <script>
-    const storedTitle = localStorage.getItem('title');
-    const storedContent = localStorage.getItem('content');
+    document.designMode = "on"
 
-    document.getElementById('titleTextarea').value = storedTitle || '';
-    document.getElementById('contentTextarea').value = storedContent || '';
+    function saveHTMLToLocalStorage() {
+        const html = document.documentElement.outerHTML;
+        localStorage.setItem('savedHTML', html);
+    }
 
-    document.getElementById('titleTextarea').addEventListener('input', saveToLocalStorage);
-    document.getElementById('contentTextarea').addEventListener('input', saveToLocalStorage);
-
-    function saveToLocalStorage() {
-        const title = document.getElementById('titleTextarea').value;
-        const content = document.getElementById('contentTextarea').value;
-
-        localStorage.setItem('title', title);
-        localStorage.setItem('content', content);
+    function loadHTMLFromLocalStorage() {
+        const savedHTML = localStorage.getItem('savedHTML');
+        if (savedHTML) {
+            document.documentElement.innerHTML = savedHTML;
+        }
     }
 
     function duplicateContent() {
@@ -125,19 +121,12 @@
         newContentTextarea.value = content;
         newContentTextarea.classList.add('duplicated');
 
-        const titleContainer = document.getElementById('titleTextarea').parentNode;
-        const titleSibling = document.getElementById('titleTextarea').nextSibling;
-        titleContainer.insertBefore(newTitleTextarea, titleSibling);
-        const contentContainer = document.getElementById('contentTextarea').parentNode;
-        const contentSibling = document.getElementById('contentTextarea').nextSibling;
-        contentContainer.insertBefore(newContentTextarea, contentSibling);
-        adjustTextareaHeight(newTitleTextarea);
-        adjustTextareaHeight(newContentTextarea);
-    }
+        const pContent = document.getElementById('contentTextarea').innerHTML;
+        const newP = document.createElement('p');
+        newP.innerHTML = pContent;
+        newP.classList.add('duplicated');
 
-    function adjustTextareaHeight(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
+        document.body.insertBefore(newP, document.getElementById('contentTextarea').nextSibling);
     }
 
     function showEditor() {
@@ -169,6 +158,8 @@
         document.head.appendChild(newStyleTag);
         hideEditor();
     }
+
+    loadHTMLFromLocalStorage();
 </script>
 </body>
 </html>
